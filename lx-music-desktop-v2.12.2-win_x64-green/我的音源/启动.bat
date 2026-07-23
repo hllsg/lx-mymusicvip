@@ -13,11 +13,13 @@ cd /d "%~dp0"
 echo ============================================
 echo  我的音源后端 (独立于 mineradio)
 echo  地址: http://127.0.0.1:3000
-echo  登录信息: 本文件夹下 .netease-cookie / .qq-cookie
+echo  控制台: http://127.0.0.1:3000 (自动打开)
 echo  关闭此窗口即停止服务。lx 播放时需保持开启。
 echo ============================================
 echo.
 
+REM 2秒后自动打开浏览器到控制台
+start "" /B cmd /c "timeout /t 2 >nul && start http://127.0.0.1:3000"
 node server.js
 
 echo.

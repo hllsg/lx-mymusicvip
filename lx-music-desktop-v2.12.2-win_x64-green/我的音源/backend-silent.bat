@@ -10,4 +10,4 @@ netstat -ano | findstr ":3000" | findstr "LISTENING" >nul 2>&1
 if %errorlevel%==0 exit /b 0
 
 cd /d "%~dp0"
-"D:\Editor\Node\node.exe" server.js
+node server.js

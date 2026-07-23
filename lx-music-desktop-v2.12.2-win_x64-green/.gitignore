@@ -1,0 +1,5 @@
+# Ignore everything in this LX app folder except 我的音源
+*
+!.gitignore
+!我的音源/
+!我的音源/**

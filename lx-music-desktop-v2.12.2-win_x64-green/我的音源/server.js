@@ -175,7 +175,11 @@ try { if (fs.existsSync(COOKIE_FILE)) userCookie = fs.readFileSync(COOKIE_FILE, 
 catch (e) { userCookie = ''; }
 function saveCookie(c) {
   userCookie = normalizeCookieHeader(c) || rawCookieFallback(c);
-  try { fs.writeFileSync(COOKIE_FILE, userCookie); } catch (e) {}
+  if (userCookie) {
+    try { fs.writeFileSync(COOKIE_FILE, userCookie); } catch (e) {}
+  } else {
+    try { if (fs.existsSync(COOKIE_FILE)) fs.unlinkSync(COOKIE_FILE); } catch (e) {}
+  }
 }
 
 let qqCookie = '';
@@ -183,7 +187,11 @@ try { if (fs.existsSync(QQ_COOKIE_FILE)) qqCookie = fs.readFileSync(QQ_COOKIE_FI
 catch (e) { qqCookie = ''; }
 function saveQQCookie(c) {
   qqCookie = normalizeCookieHeader(c) || rawCookieFallback(c);
-  try { fs.writeFileSync(QQ_COOKIE_FILE, qqCookie); } catch (e) {}
+  if (qqCookie) {
+    try { fs.writeFileSync(QQ_COOKIE_FILE, qqCookie); } catch (e) {}
+  } else {
+    try { if (fs.existsSync(QQ_COOKIE_FILE)) fs.unlinkSync(QQ_COOKIE_FILE); } catch (e) {}
+  }
 }
 
 // ---------- 工具 ----------
