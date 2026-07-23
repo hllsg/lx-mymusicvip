@@ -2,7 +2,7 @@
 ' auto-open login page if needed, then launch lx-music,
 ' auto-stop backend when lx exits.
 
-Dim shell, fso, selfDir, rootDir, lg, logFile, fldr, backendBat, lxExe
+Dim shell, fso, selfDir, rootDir, lg, logFile, lxExe
 Set shell = CreateObject("WScript.Shell")
 Set fso = CreateObject("Scripting.FileSystemObject")
 selfDir = fso.GetParentFolderName(WScript.ScriptFullName)
@@ -17,30 +17,26 @@ End Sub
 L "selfDir=" & selfDir
 L "rootDir=" & rootDir
 
-' ---- find backend bat and lx exe ----
-backendBat = ""
+' ---- find lx exe ----
 lxExe = ""
-' search subfolders for backend
-For Each fldr In fso.GetFolder(rootDir).SubFolders
-  If backendBat = "" And fso.FileExists(fldr.Path & "\backend-silent.bat") Then backendBat = fldr.Path & "\backend-silent.bat"
-Next
-' lx exe is in rootDir itself
 If fso.FileExists(rootDir & "\lx-music-desktop.exe") Then lxExe = rootDir & "\lx-music-desktop.exe"
-L "backendBat=" & backendBat
 L "lxExe=" & lxExe
 
-' ---- 1) start backend hidden ----
-If backendBat <> "" Then
-  shell.Run "cmd /c """ & backendBat & """", 0, False
-  L "backend launched"
-Else
-  L "ERROR: backend-silent.bat not found"
-End If
+' ---- 1) start backend hidden (direct node, no bat needed) ----
+Dim nodeExe, serverJs, nodeCmd
+nodeExe = "node"
+serverJs = selfDir & "\server.js"
+
+' build env vars and command
+nodeCmd = "cmd /c set HOST=127.0.0.1&& set PORT=3000&& set MINERADIO_UPDATE_MANIFEST=disabled&& cd /d """ & selfDir & """ && " & nodeExe & " """ & serverJs & """"
+
+shell.Run nodeCmd, 0, False
+L "backend launched"
 
 ' ---- 2) wait for backend to be ready ----
 Dim http, apiBase, maxWait, waited
 apiBase = "http://127.0.0.1:3000"
-maxWait = 15   ' max seconds to wait for backend startup
+maxWait = 15
 waited = 0
 
 Do While waited < maxWait
@@ -135,7 +131,7 @@ Loop While alive > 0
 
 ' ---- 7) lx gone -> stop backend ----
 Dim stopPs
-stopPs = fso.GetParentFolderName(backendBat) & "\stop-backend.ps1"
+stopPs = selfDir & "\stop-backend.ps1"
 If fso.FileExists(stopPs) Then
   shell.Run "powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File """ & stopPs & """", 0, True
 End If
