@@ -1,4 +1,4 @@
-Write-Host "============================================"
+﻿Write-Host "============================================"
 Write-Host "  MyMusicSource - First Time Setup"
 Write-Host "============================================"
 Write-Host ""
@@ -23,24 +23,31 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host ""
 
-# Create desktop shortcut
+# Create desktop shortcut via VBS (handles Chinese reliably)
 $vbsPath = Join-Path $PSScriptRoot "启动我的LX.vbs"
 $lxExe = Join-Path (Split-Path $PSScriptRoot -Parent) "lx-music-desktop.exe"
 $desktop = [Environment]::GetFolderPath("Desktop")
 $shortcutPath = Join-Path $desktop "洛雪music.lnk"
 
+$vbsTemp = Join-Path $env:TEMP "create_lx_shortcut.vbs"
+$iconLine = ""
+if (Test-Path $lxExe) { $iconLine = "sc.IconLocation = `"$lxExe,0`"" }
+
+@"
+Set ws = CreateObject("WScript.Shell")
+Set sc = ws.CreateShortcut("$shortcutPath")
+sc.TargetPath = "$vbsPath"
+sc.WorkingDirectory = "$PSScriptRoot"
+sc.Description = "洛雪music - 一键启动（含我的音源后端）"
+$iconLine
+sc.Save()
+"@ | Set-Content -Path $vbsTemp -Encoding Default
+
 Write-Host "[*] Creating desktop shortcut..."
 try {
-    $ws = New-Object -ComObject WScript.Shell
-    $sc = $ws.CreateShortcut($shortcutPath)
-    $sc.TargetPath = $vbsPath
-    $sc.WorkingDirectory = $PSScriptRoot
-    $sc.Description = "洛雪music - 一键启动（含我的音源后端）"
-    if (Test-Path $lxExe) {
-        $sc.IconLocation = "$lxExe,0"
-    }
-    $sc.Save()
-    Write-Host "[OK] Desktop shortcut created: $shortcutPath"
+    cscript //nologo "$vbsTemp"
+    Remove-Item $vbsTemp -Force
+    Write-Host "[OK] Desktop shortcut created on your desktop"
 } catch {
     Write-Host "[WARN] Failed to create shortcut: $_"
 }
