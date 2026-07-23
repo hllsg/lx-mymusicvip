@@ -13,12 +13,27 @@ Write-Host "[OK] Node.js: $(node --version)"
 
 Set-Location -LiteralPath $PSScriptRoot
 Write-Host ""
-Write-Host "[*] Installing dependencies..."
-npm install
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "[ERROR] npm install failed. Check your network and retry."
-    Read-Host "Press Enter to exit"
-    exit 1
+
+# Skip npm install if node_modules is already up to date
+$needsInstall = $true
+$pkgLock = Join-Path $PSScriptRoot "node_modules\.package-lock.json"
+$pkgJson  = Join-Path $PSScriptRoot "package.json"
+if ((Test-Path $pkgLock) -and (Test-Path $pkgJson)) {
+    if ((Get-Item $pkgLock).LastWriteTime -ge (Get-Item $pkgJson).LastWriteTime) {
+        $needsInstall = $false
+    }
+}
+
+if ($needsInstall) {
+    Write-Host "[*] Installing dependencies..."
+    npm install
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "[ERROR] npm install failed. Check your network and retry."
+        Read-Host "Press Enter to exit"
+        exit 1
+    }
+} else {
+    Write-Host "[OK] Dependencies already installed, skipping npm install"
 }
 
 Write-Host ""
@@ -44,13 +59,18 @@ $iconLine
 sc.Save()
 "@ | Set-Content -Path $vbsTemp -Encoding Default
 
-Write-Host "[*] Creating desktop shortcut..."
-try {
-    cscript //nologo "$vbsTemp"
-    Remove-Item $vbsTemp -Force
-    Write-Host "[OK] Desktop shortcut created on your desktop"
-} catch {
-    Write-Host "[WARN] Failed to create shortcut: $_"
+if (Test-Path $shortcutPath) {
+    Write-Host "[OK] Desktop shortcut already exists, skipping"
+    if (Test-Path $vbsTemp) { Remove-Item $vbsTemp -Force }
+} else {
+    Write-Host "[*] Creating desktop shortcut..."
+    try {
+        cscript //nologo "$vbsTemp"
+        Remove-Item $vbsTemp -Force
+        Write-Host "[OK] Desktop shortcut created on your desktop"
+    } catch {
+        Write-Host "[WARN] Failed to create shortcut: $_"
+    }
 }
 
 Write-Host ""
