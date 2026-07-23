@@ -1,0 +1,14 @@
+{
+  "name": "my-music-source",
+  "productName": "我的音源",
+  "version": "1.0.0",
+  "description": "lx 自定义源专用取址后端：用本机保存的网易云/QQ会员登录态换取播放地址。",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "NeteaseCloudMusicApi": "^4.32.0"
+  }
+}
