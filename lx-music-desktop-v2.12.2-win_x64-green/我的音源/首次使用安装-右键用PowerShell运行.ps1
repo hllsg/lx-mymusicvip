@@ -36,7 +36,8 @@ if (Test-Path $lxExe) { $iconLine = "sc.IconLocation = `"$lxExe,0`"" }
 @"
 Set ws = CreateObject("WScript.Shell")
 Set sc = ws.CreateShortcut("$shortcutPath")
-sc.TargetPath = "$vbsPath"
+sc.TargetPath = "wscript.exe"
+sc.Arguments = """$vbsPath"""
 sc.WorkingDirectory = "$PSScriptRoot"
 sc.Description = "洛雪music - 一键启动（含我的音源后端）"
 $iconLine
